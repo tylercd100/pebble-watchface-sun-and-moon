@@ -68,34 +68,7 @@ function calc(){
 	}
 }
 
-function getSunAngle(now, latitude, longitude){
-	var celestial = SunCalc.getTimes(now, latitude, longitude);
-	var time_start = celestial.sunrise;
-	var time_end = celestial.sunset;
-	var degrees = 0;
-	var percentage = 0;
-
-	//Get proper datetime range
-	if(celestial.sunset < now){
-		time_start = celestial.sunset;
-		var tomorrow = new Date();
-		tomorrow.setDate(now.getDate() + 1);
-		celestial = SunCalc.getTimes(tomorrow, latitude, longitude)
-		time_end = celestial.sunrise;
-		degrees += 180;
-	}
-
-	console.log("Sun Start: "+time_start);
-	console.log("Sun End:   "+time_end);
-
-	//Get percentage of datetime range
-	percentage = percentOfTimeRange(now,time_start,time_end)
-
-	//Return angle in degrees from percentage
-	return degrees + (percentage * 180);
-}
-
-function getMoonStartDate(){
+function getCelestialStartDate(func,rise,set,name){
 	var i = 0;
 	var degrees = 0;
 	var time_start = null;
@@ -104,14 +77,15 @@ function getMoonStartDate(){
 		if(i>0){
 			past.setDate(now.getDate() - i);
 		}
-		var celestial = SunCalc.getMoonTimes(past, latitude, longitude)
-		console.log(JSON.stringify(celestial));
-		if(celestial.rise && celestial.rise < now && (!celestial.set || celestial.rise > celestial.set)){
-			time_start = celestial.rise;
-			console.log('The Moon was risen at: '+time_start)
-		} else if(celestial.set && celestial.set < now && (!celestial.rise || celestial.set > celestial.rise)){
-			time_start = celestial.set;
-			console.log('The Moon was set at: '+time_start)
+		var celestial = SunCalc[func](past, latitude, longitude)
+		if(name === 'Sun')
+			console.log(JSON.stringify(celestial));
+		if(celestial[rise] && celestial[rise] < now && (!celestial[set] || (celestial[rise] > celestial[set] || celestial[set] > now))){
+			time_start = celestial[rise];
+			console.log('The '+name+' was risen at: '+time_start)
+		} else if(celestial[set] && celestial[set] < now && (!celestial[rise] || celestial[set] > celestial[rise])){
+			time_start = celestial[set];
+			console.log('The '+name+' was set at: '+time_start)
 			degrees+=180;
 		}
 		i++;
@@ -120,7 +94,7 @@ function getMoonStartDate(){
 	return {time_start: time_start, modifier: degrees};
 }
 
-function getMoonEndDate(){
+function getCelestialEndDate(func,rise,set,name){
 	var i = 0;
 	var times = [];
 	var time_end = null;
@@ -130,12 +104,12 @@ function getMoonEndDate(){
 		if(i>0){
 			future.setDate(now.getDate() + i);
 		}
-		var celestial = SunCalc.getMoonTimes(future, latitude, longitude);
-		if(celestial.set){
-			times.push(celestial.set)
+		var celestial = SunCalc[func](future, latitude, longitude);
+		if(celestial[set]){
+			times.push(celestial[set])
 		}
-		if(celestial.rise){
-			times.push(celestial.rise)
+		if(celestial[rise]){
+			times.push(celestial[rise])
 		}
 	}
 
@@ -153,14 +127,33 @@ function getMoonEndDate(){
 function getMoonAngle(now, latitude, longitude){
 	var celestial = SunCalc.getMoonTimes(now, latitude, longitude, false);
 	var percentage = 0;
-	var start = getMoonStartDate();
-	var end = getMoonEndDate();	
+	var start = getCelestialStartDate('getMoonTimes','rise','set','Moon');
+	var end = getCelestialEndDate('getMoonTimes','rise','set','Moon');	
 	var degrees = start.modifier;
 	var time_start = start.time_start;
 	var time_end = end.time_end;
 
 	console.log("Moon Start: "+time_start);
 	console.log("Moon End:   "+time_end);
+
+	//Get percentage of datetime range
+	percentage = percentOfTimeRange(now,time_start,time_end)
+
+	//Return angle in degrees from percentage
+	return degrees + (percentage * 180);
+}
+
+function getSunAngle(now, latitude, longitude){
+	var celestial = SunCalc.getTimes(now, latitude, longitude);
+	var percentage = 0;
+	var start = getCelestialStartDate('getTimes','sunrise','sunset','Sun');
+	var end = getCelestialEndDate('getTimes','sunrise','sunset','Sun');	
+	var degrees = start.modifier;
+	var time_start = start.time_start;
+	var time_end = end.time_end;
+
+	console.log("Sun Start: "+time_start);
+	console.log("Sun End:   "+time_end);
 
 	//Get percentage of datetime range
 	percentage = percentOfTimeRange(now,time_start,time_end)

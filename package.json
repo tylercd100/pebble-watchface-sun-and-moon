@@ -19,7 +19,6 @@
       "location"
     ],
     "targetPlatforms": [
-      "aplite",
       "basalt",
       "chalk"
     ],
@@ -31,7 +30,18 @@
       "MOON_ANGLE"
     ],
     "resources": {
-      "media": []
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "IMAGE_EARTH_BASALT",
+          "file": "img/earth_84.png"
+        },
+        {
+          "type": "bitmap",
+          "name": "IMAGE_EARTH_CHALK",
+          "file": "img/earth_140.png"
+        }
+      ]
     }
   }
 }
