@@ -1,0 +1,37 @@
+{
+  "name": "sun-and-moon",
+  "author": "Tyler Arbon",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {
+    "lodash": "^4.14.0",
+    "suncalc": "~1.7.0"
+  },
+  "pebble": {
+    "displayName": "sun-and-moon",
+    "uuid": "01a1e132-858f-4923-9667-bbd98c8c82ca",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "capabilities": [
+      "location"
+    ],
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk"
+    ],
+    "watchapp": {
+      "watchface": true
+    },
+    "messageKeys": [
+      "SUN_ANGLE",
+      "MOON_ANGLE"
+    ],
+    "resources": {
+      "media": []
+    }
+  }
+}
