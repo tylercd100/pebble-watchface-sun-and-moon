@@ -13,14 +13,23 @@ var geoOptions = {
   timeout: 10000
 };
 
-Pebble.addEventListener('ready', function ready() {
-	// PebbleKit JS is ready!
-	console.log('PebbleKit JS ready!');
-	main();
-});
+Pebble.addEventListener('ready', onReady);
 
-function main(){
-	console.log(++i);
+function onReady(){
+	console.log('PebbleKit JS ready!');
+
+	// Get pre-existing position
+	latitude = localStorage.getItem('latitude');
+	longitude = localStorage.getItem('longitude');
+
+	// Start the loops
+	setInterval(calc, 5000);
+  	setInterval(function(){
+  		getLocation(15,onGeoLocSuccess,onGeoLocError,geoOptions);
+  	}, 10000);
+
+  	// Call the basics right away
+	calc();
 	getLocation(15,onGeoLocSuccess,onGeoLocError,geoOptions);
 }
 
@@ -31,16 +40,23 @@ function getLocation(minutes,success,error,options){
 
 function onGeoLocSuccess(pos){
 	now = new Date();
+
   	latitude = pos.coords.latitude;
   	longitude = pos.coords.longitude;
-  	calc();
-  	setTimeout(main, 10000);
+  	localStorage.setItem('latitude', latitude);
+	localStorage.setItem('longitude', longitude);
+
+	console.log('location success lat:'+latitude+" long:"+longitude);
+}
+
+function onGeoLocError(err) {
+	console.log('location error (' + err.code + '): ' + err.message);
 }
 
 function calc(){
-	now = new Date();
-
 	if(latitude !== null && longitude !== null){
+		now = new Date();
+	  	
 	  	//Sun Angle
 	  	var sunAngle = Math.round(getSunAngle(now, latitude, longitude));
 	  	console.log("Angle of the Sun: " + sunAngle);
@@ -78,14 +94,14 @@ function getCelestialStartDate(func,rise,set,name){
 			past.setDate(now.getDate() - i);
 		}
 		var celestial = SunCalc[func](past, latitude, longitude)
-		if(name === 'Sun')
-			console.log(JSON.stringify(celestial));
+		// if(name === 'Sun')
+			// console.log(JSON.stringify(celestial));
 		if(celestial[rise] && celestial[rise] < now && (!celestial[set] || (celestial[rise] > celestial[set] || celestial[set] > now))){
 			time_start = celestial[rise];
-			console.log('The '+name+' was risen at: '+time_start)
+			// console.log('The '+name+' was risen at: '+time_start)
 		} else if(celestial[set] && celestial[set] < now && (!celestial[rise] || celestial[set] > celestial[rise])){
 			time_start = celestial[set];
-			console.log('The '+name+' was set at: '+time_start)
+			// console.log('The '+name+' was set at: '+time_start)
 			degrees+=180;
 		}
 		i++;
@@ -169,10 +185,7 @@ function percentOfTimeRange(time_now,time_start,time_end){
 	return percent;
 }
 
-function onGeoLocError(err) {
-  console.log('location error (' + err.code + '): ' + err.message);
-  setTimeout(main, 10000);
-}
+
 
 function round(num, places) {
     var multiplier = Math.pow(10, places);
